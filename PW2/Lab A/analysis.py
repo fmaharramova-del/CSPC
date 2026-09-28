@@ -52,3 +52,30 @@ axs[2].legend()
 
 fig.tight_layout()
 plt.savefig("motion.png")
+
+# ---------- Bonus: 2D tracked trajectory ----------
+traj = np.loadtxt("trajectory.csv", delimiter=",", skiprows=1)
+tt = traj[:, 0]
+x = traj[:, 1]
+yy = traj[:, 2]
+
+vx = np.gradient(x, tt)
+vy = np.gradient(yy, tt)
+speed = np.sqrt(vx**2 + vy**2)
+print("Mean speed:", speed.mean())
+
+fig2, axs2 = plt.subplots(1, 2, figsize=(11, 4))
+
+axs2[0].plot(x, yy)
+axs2[0].set_xlabel("x (m)")
+axs2[0].set_ylabel("y (m)")
+axs2[0].set_title("Path")
+axs2[0].set_aspect("equal")
+
+axs2[1].plot(tt, speed)
+axs2[1].set_xlabel("Time (s)")
+axs2[1].set_ylabel("Speed (m/s)")
+axs2[1].set_title("Speed")
+
+fig2.tight_layout()
+fig2.savefig("trajectory.png")

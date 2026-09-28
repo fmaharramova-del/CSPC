@@ -48,3 +48,7 @@ My coursework repository. Each practical is under PW<n>/Lab <X>/.
 - Integrating the noisy acceleration twice recovered the position with a maximum difference of 0.78 m from the original. Integration is a sum, so random errors partly cancel: integration suppresses noise, the opposite of differentiation.
 
 **Figure:** `PW2/Lab A/motion.png` shows position (smooth), velocity (slightly rough) and acceleration (very noisy, around the dashed -9.81 line).
+
+
+**Bonus: 2D tracked trajectory:**
+- The tracked path (x vs y) is a figure-eight, roughly between -50 and 50 m in both directions. The speed computed from `np.gradient` of x and y separately, sqrt(vx² + vy²), has a mean of 23.65 m/s and oscillates between about 8 and 38 m/s. Small jitter on top of the smooth oscillation comes from measurement noise amplified by one differentiation. Figure: `PW2/Lab A/trajectory.png`.
