@@ -52,3 +52,22 @@ My coursework repository. Each practical is under PW<n>/Lab <X>/.
 
 **Bonus: 2D tracked trajectory:**
 - The tracked path (x vs y) is a figure-eight, roughly between -50 and 50 m in both directions. The speed computed from `np.gradient` of x and y separately, sqrt(vx² + vy²), has a mean of 23.65 m/s and oscillates between about 8 and 38 m/s. Small jitter on top of the smooth oscillation comes from measurement noise amplified by one differentiation. Figure: `PW2/Lab A/trajectory.png`.
+
+---
+
+## PW2 --- Lab B: Optimization in Chemistry
+
+**Part 2 (methods):** On the convex f(x)=(x-3)^2+1 all three methods give x≈3.
+On g(x)=x^4-3x^2+x+5 they disagree. From x0=0, gradient descent and SLSQP
+find the global minimum x≈-1.30, but Newton lands on the maximum x≈0.17
+(g''=-5.65<0), since it only finds g'(x)=0. From x0=2, gradient descent and
+Newton get stuck in the local minimum x≈1.13 (g''=9.35>0), while SLSQP reaches
+the global minimum x≈-1.30. So the result depends on both the starting point
+and the algorithm.
+
+**Rate constant:** k ≈ 0.262 (C0 = 104.08).
+
+**Equilibrium (K=15.6):** x ≈ 0.664; H2 = I2 ≈ 0.336 mol, HI ≈ 1.328 mol.
+Newton and SLSQP agree.
+
+**Titration (bonus):** equivalence point at V = 50.00 mL (pH 7.00).
