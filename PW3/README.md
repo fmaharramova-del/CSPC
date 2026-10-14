@@ -1,114 +1,65 @@
-# PW3 – Data, Distributions, Testing, and Causation
+# PW3 - Data, Distributions, Testing, and Causation
 
-Data source: Heart Disease (Cleveland), UCI Machine Learning Repository / Kaggle.
+Data: Heart Disease (Cleveland), UCI Machine Learning Repository / Kaggle. heart.csv was made from processed.cleveland.data with prepare_heart.py (I added the column names, and target = 1 if num > 0, otherwise 0). The second dataset is chemicals_cancer.csv.
 
-## Session 1 – Shape of the variables
+## Session 1 - Shape of the variables
 
-![distributions](distributions.png)
+age: one peak around 55-60 years, roughly bell-shaped, values from 29 to 77.
 
-- **age**: roughly bell-shaped, with one peak around 55-60 years. Values go from 29 to 77. It is a bit uneven, with a slightly longer tail towards younger patients.
-- **chol**: one peak around 220-250, but the right side has a long tail, so it is skewed to the right. There is one clear outlier near 560.
-- **trestbps**: one peak around 120-140, with a tail to the right up to 200, so it is skewed to the right. The bars are jagged because blood pressure is mostly recorded as round numbers.
-- **thalach**: one peak around 160, with a long tail to the left down to 70, so it is skewed to the left.
+chol: one peak around 220-250, a long tail to the right, and one outlier near 560. Skewed to the right.
 
-## Session 1 – Normality check
+trestbps: one peak around 120-140, a tail to the right up to 200. Skewed to the right. The bars are jagged because blood pressure is mostly recorded as round numbers.
 
-I used the Shapiro-Wilk test, the skewness, and Q-Q plots (`qqplots.png`).
+thalach: one peak around 160, a long tail to the left down to 70. Skewed to the left.
 
-| variable | skewness | Shapiro-Wilk p-value | verdict |
-|---|---|---|---|
-| age | -0.21 | 6.1e-03 | approximately normal |
-| chol | 1.13 | 5.9e-09 | not normal |
-| trestbps | 0.70 | 1.8e-06 | not normal |
-| thalach | -0.53 | 7.0e-05 | not normal |
+## Session 1 - Normality
 
-![qqplots](qqplots.png)
+I used the Shapiro-Wilk test, the skewness and Q-Q plots.
 
-- **age**: the Shapiro-Wilk p-value is below 0.05, but with 303 patients this test detects very small deviations. The skewness is close to 0 and the Q-Q plot follows the line closely, so I treat age as approximately normal.
-- **chol**: strongly skewed to the right (skewness 1.13), with one outlier near 560. The Q-Q plot bends away from the line at the upper end. Not normal.
-- **trestbps**: skewed to the right, and the Q-Q plot is stepped because values are mostly round numbers. Not normal.
-- **thalach**: skewed to the left (skewness -0.53); the Q-Q plot deviates from the line at the lower end and the test rejects normality (p = 7e-05). I treat it as not normal, so in Session 2 I will use a method that does not assume normality.
+age: skewness -0.21, Shapiro-Wilk p = 6.1e-03. The p-value is below 0.05, but with 303 patients the test notices very small deviations. The skewness is close to 0 and the Q-Q plot follows the line, so I treat age as approximately normal.
 
-## Session 2 – Is the effect real? (maximum heart rate, thalach)
+chol: skewness 1.13, p = 5.9e-09. Strongly skewed to the right, the Q-Q plot bends away from the line at the top end. Not normal.
 
-Question: do heart-disease patients reach a different maximum heart rate than healthy ones?
+trestbps: skewness 0.70, p = 1.8e-06. Skewed to the right, the Q-Q plot is stepped. Not normal.
 
-Method: I split `thalach` by `target` (1 = disease, 0 = healthy). Since `thalach` is not normally distributed (Session 1), I used the Mann-Whitney U test instead of a t-test, because it does not assume normality. The test was two-sided.
+thalach: skewness -0.53, p = 7.0e-05. Skewed to the left, the Q-Q plot bends away at the lower end. Not normal, so in Session 2 I used a method that does not need normality.
 
-| group | n | mean | median |
-|---|---|---|---|
-| disease | 139 | 139.26 | 142.0 |
-| healthy | 164 | 158.38 | 161.0 |
+## Session 2 - Is the effect real? (thalach)
+
+Question: do patients with heart disease have a different maximum heart rate than healthy ones?
+
+I split thalach by target (1 = disease, 0 = healthy). Because thalach is not normal, I used the Mann-Whitney U test instead of a t-test (it does not assume normality). The test was two-sided.
+
+Disease group: 139 patients, mean 139.26, median 142.0. Healthy group: 164 patients, mean 158.38, median 161.0.
 
 Result: U = 5806.5, p = 1.9e-13.
 
-Conclusion: p is far below 0.05, so the two groups genuinely differ. Patients with heart disease reach a lower maximum heart rate (about 19 bpm lower on average) than healthy patients.
+Conclusion: p is far below 0.05, so the two groups really differ. Patients with heart disease have a lower maximum heart rate, about 19 bpm lower on average.
 
-### Mean and uncertainty
+Mean and uncertainty: I used the standard error of the mean (SEM = std / sqrt(n)). Disease: mean 139.26, SEM 1.92. Healthy: mean 158.38, SEM 1.50. In the plot (thalach_means.png) the error bars are small, about 2 bpm, compared to the difference between the means, and they do not overlap. So the picture agrees with the Mann-Whitney result.
 
-For each group I computed the mean of `thalach` and the standard error of the mean (SEM = std / sqrt(n)), which shows how precisely the mean is known.
+## Session 2 - Age and heart rate
 
-| group | mean | SEM |
-|---|---|---|
-| disease | 139.26 | 1.92 |
-| healthy | 158.38 | 1.50 |
+I used the Spearman correlation (it does not need normality, and thalach is not normal) and also the Pearson correlation for comparison. Spearman: -0.392 (p = 1.5e-12). Pearson: -0.394 (p = 1.1e-12).
 
-![means](thalach_means.png)
+The correlation is negative and moderate. Older patients tend to have a lower maximum heart rate. The effect is not by chance (p is tiny), but the scatter in the plot (age_thalach.png) is large, so age explains only part of the variation.
 
-The plot shows the two means with mean ± SEM error bars. The error bars are small (about 2 bpm) compared to the difference between the means (about 19 bpm), and they do not overlap at all. So the picture agrees with the Mann-Whitney result: the two groups really differ in maximum heart rate.
+## Dataset 2 - Chemical mystery
 
-## Session 2 – Do age and heart rate move together?
+Naive analysis: I computed the correlation of each chemical with malignancy. Benzene: Pearson 0.385, Spearman 0.377. Cadmium: Pearson 0.880, Spearman 0.885. Cadmium is much more strongly associated, so taken at face value cadmium looks like the cause.
 
-I quantified the relationship between `age` and `thalach` with the Spearman rank correlation (it does not need normality, and `thalach` is not normal) and, for comparison, the Pearson correlation.
+Looking again: the correlation matrix showed that pollution_index is almost perfectly correlated with cadmium (0.98), strongly correlated with malignancy (0.90) and not correlated with benzene (0.05). So pollution could be a third variable that influences both cadmium and malignancy.
 
-| method | coefficient | p-value |
-|---|---|---|
-| Spearman | -0.392 | 1.5e-12 |
-| Pearson | -0.394 | 1.1e-12 |
+To test this I kept only patients with similar pollution (40 < pollution_index < 60, 199 patients) and computed the correlations again inside this group. Benzene: 0.385 for all patients, 0.702 in the restricted group. Cadmium: 0.880 for all patients, 0.316 in the restricted group (plot: controlled.png).
 
-![age vs thalach](age_thalach.png)
+The association of cadmium collapses when pollution is held roughly constant. The association of benzene does not disappear, it gets even clearer. The 0.316 left for cadmium is because the band is not perfectly narrow, so pollution still varies a bit inside it and it is almost perfectly correlated with cadmium.
 
-Interpretation: the correlation is negative and moderate (about -0.4). Older patients tend to reach a lower maximum heart rate, and the effect is not due to chance (p is tiny), but the scatter is large, so age explains only part of the variation in heart rate.
+Conclusion: cadmium only looked guilty, because pollution raises both cadmium and malignancy. Benzene is the chemical that really causes malignancy, because its effect survives when the confounder is controlled.
 
-## Dataset 2 – Chemical exposure mystery
+## Bonus - how unpredictable is a category?
 
-### Naive analysis
+I used the Shannon entropy H = -sum(p * log2(p)). For two classes, H = 1 bit means a perfect 50/50 split (hardest to guess), and H close to 0 means almost everything is in one class (easy to guess).
 
-`chemicals_cancer.csv` has 1000 patients with benzene, cadmium, pollution_index, age and malignancy. I computed the Pearson and Spearman correlation between each chemical and malignancy.
+target: proportions 54.1% / 45.9%, entropy 0.995 bits. It is almost perfectly balanced, always guessing the most common class is right only 54.1% of the time, about like a coin flip.
 
-| chemical | Pearson r | Spearman rho |
-|---|---|---|
-| benzene | 0.385 | 0.377 |
-| cadmium | 0.880 | 0.885 |
-
-![naive analysis](naive.png)
-
-Both chemicals are positively associated with malignancy, but cadmium is far more strongly associated (about 0.88) than benzene (about 0.38). Taken at face value, cadmium appears to be the cause of malignancy. However, a strong correlation alone does not prove causation, so this needs to be checked against other variables (next section).
-
-### Looking again: controlling for pollution_index
-
-The correlation matrix showed that `pollution_index` is almost perfectly correlated with cadmium (0.98), strongly correlated with malignancy (0.90), and not correlated with benzene (0.05). So pollution could be a third variable (a confounder) that drives both cadmium and malignancy.
-
-To test this I restricted the data to patients with similar pollution (40 < pollution_index < 60, 199 patients) and recomputed the correlations with malignancy inside this group.
-
-| chemical | r, all patients | r, restricted to similar pollution |
-|---|---|---|
-| benzene | 0.385 | 0.702 |
-| cadmium | 0.880 | 0.316 |
-
-![controlled](controlled.png)
-
-Result: the association of cadmium with malignancy collapses (0.88 to 0.32) once pollution is held roughly constant, while the association of benzene does not disappear, it becomes even clearer (0.39 to 0.70), because the variation caused by pollution no longer adds noise. The remaining 0.32 for cadmium is because the band is not perfectly narrow, so pollution still varies a little inside it and it is almost perfectly correlated with cadmium.
-
-Conclusion: cadmium only looked guilty. It is correlated with malignancy because pollution raises both of them. Benzene is the chemical that really drives malignancy, since its effect survives when the confounder is controlled.
-
-## Bonus – how unpredictable is a category?
-
-I measured how balanced a categorical column is with the Shannon entropy, H = -sum(p * log2(p)), where p are the class proportions. For two classes H = 1 bit means a perfect 50/50 split (hardest to guess) and H close to 0 means almost everything is in one class (easy to guess). I also report the accuracy of always guessing the most common class.
-
-| column | proportions | entropy (max 1 bit) | accuracy of guessing the majority class |
-|---|---|---|---|
-| target | 54.1% / 45.9% | 0.995 | 54.1% |
-| sex | 68% / 32% | 0.905 | 68.0% |
-
-`target` is almost perfectly balanced, so a category is about as hard to guess as a coin flip. `sex` is more lopsided (about two thirds of one class), so it is easier to guess.
+sex: proportions 68% / 32%, entropy 0.905 bits. It is more lopsided, so it is easier to guess (68.0% by always choosing the most common class).
